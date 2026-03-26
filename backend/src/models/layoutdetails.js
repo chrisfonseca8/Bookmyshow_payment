@@ -1,5 +1,6 @@
 "use strict";
 const { Model } = require("sequelize");
+const {Enums} = require('../utils')
 const {seatNameEnum} = Enums;
 const {Classic,Classic_Plus,Recliner,Prime} = seatNameEnum
 
