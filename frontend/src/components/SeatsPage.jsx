@@ -23,7 +23,7 @@ function SeatsPage() {
   useEffect(() => {
     setSelectedSeats([]); // reset selected seats when ticket count changes
   }, [numberOfSeats]);
-  
+
   useEffect(() => {
     fetch('http://localhost:3000/api/v1/seats')
       .then(res => res.json())
@@ -41,6 +41,8 @@ function SeatsPage() {
       })
   }, [])
 
+
+  
   const handleSeatClick = (clickedSeat, rowSeats) => {
     if (selectedSeats.includes(clickedSeat.seat_number)) {
       setSelectedSeats([]); // toggle off if clicking an already selected seat
