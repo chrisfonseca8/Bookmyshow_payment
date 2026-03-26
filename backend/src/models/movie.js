@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.hasMany(models.shows, {
+        foreignKey: "movieId",
+        onDelete: "CASCADE",
+      });
     }
   }
   Movie.init(

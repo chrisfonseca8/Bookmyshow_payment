@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class layoutPatterns extends Model {
     /**
@@ -11,24 +9,36 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.hasOne(models.layoutDetails, {
+        foreignKey: "patternId",
+        onDelete: "CASCADE",
+      });
+
+      this.hasMany(models.Hall,{
+        foreignKey:'layoutPatternId',
+        onDelete:'CASCADE'
+      })
     }
   }
-  layoutPatterns.init({
-    rowNum: {
-      type:DataTypes.INTEGER,
-      allowNull:false
+  layoutPatterns.init(
+    {
+      rowNum: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      colNum: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      patterName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
-    colNum:{
-      type: DataTypes.INTEGER,
-      allowNull:false
+    {
+      sequelize,
+      modelName: "layoutPatterns",
     },
-    patterName: {
-      type:DataTypes.STRING,
-      allowNull:false
-    }
-  }, {
-    sequelize,
-    modelName: 'layoutPatterns',
-  });
+  );
   return layoutPatterns;
 };

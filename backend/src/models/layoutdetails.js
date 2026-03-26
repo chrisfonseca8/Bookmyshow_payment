@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models.layoutPatterns,{
+        foreignKey:'patternId',
+        onDelete:'CASCADE'
+      })
     }
   }
   layoutDetails.init(

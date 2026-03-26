@@ -9,6 +9,22 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      this.belongsTo(models.layoutPatterns, {
+        foreignKey: "layoutPatternId",
+        onDelete: "CASCADE",
+      });
+
+      this.hasMany(models.seats, {
+        foreignKey: "hallId",
+        sourceKey: "hallNumber",
+        onDelete: "CASCADE",
+      });
+
+      this.hasMany(models.shows, {
+        foreignKey: "hallNo",
+        targetKey: "hallNumber",
+        onDelete: "CASCADE",
+      });
     }
   }
   Hall.init(
@@ -19,8 +35,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       layoutPatternId: {
         type: DataTypes.INTEGER,
-                allowNull: false,
-
+        allowNull: false,
       },
     },
     {

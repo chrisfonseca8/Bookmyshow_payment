@@ -12,12 +12,17 @@ module.exports = {
       hallNumber: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        unique:true
+        unique: true,
       },
-     layoutPatternId:{
-      type:Sequelize.INTEGER,
-      allowNull:false
-     },
+      layoutPatternId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "layoutPatterns",
+          key: "id",
+        },
+         onDelete: 'CASCADE',
+        allowNull: false,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

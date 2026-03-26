@@ -16,6 +16,12 @@ module.exports = {
       hallId: {
         type: Sequelize.INTEGER,
         allowNull: false,
+        references: {
+          model: "halls", 
+          key: "hallNumber", 
+        },
+        onDelete: "CASCADE",
+        allowNull: false,
       },
       seat_number: {
         type: Sequelize.STRING,

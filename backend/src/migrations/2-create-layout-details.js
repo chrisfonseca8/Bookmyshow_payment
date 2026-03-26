@@ -14,6 +14,11 @@ module.exports = {
       },
       patternId: {
         type: Sequelize.INTEGER,
+        references:{
+          model:'layoutPatterns',
+          key:'id'
+        },
+         onDelete: 'CASCADE',
         allowNull: false,
       },
       row: {
