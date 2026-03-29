@@ -1,4 +1,5 @@
 module.exports = {
     bookingService:require('./bookingServices'),
-    seatservice:require('./seatsService')
+    seatservice:require('./seatsService'),
+    detailService:require('./detailServices')
 }

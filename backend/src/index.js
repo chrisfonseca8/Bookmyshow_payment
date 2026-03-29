@@ -6,6 +6,8 @@ const express = require('express');
 const app = express();
 const apiRoutes = require('./routes')
 const cors = require('cors')
+const {cronJob} = require('./utils');
+const {cronSession} = cronJob
 app.use(express.json());
 //app.use(express.urlencoded())
 //const {logger} = require('./config')
@@ -20,6 +22,7 @@ app.use(
 app.use('/api',apiRoutes);
 
 app.listen(process.env.PORT,()=>{
-   console.log(`listning on port ${process.env.PORT}`)
+   console.log(`listning on port ${process.env.PORT}`);
+   cronSession();
     //logger.info("server has started suceess",{})
 })

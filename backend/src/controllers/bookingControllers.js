@@ -7,8 +7,10 @@ const initateBookingController=async (req,res) => {
     const {hallId,seats} = req.body;
     try {
         const responce = await bookingService.initiateBookingservice(hallId,seats);
+        console.log(responce)
         return res.status(StatusCodes.ACCEPTED).json(responce)
     } catch (error) {
+        console.log("some error in controller")
             return res.status(StatusCodes.BAD_REQUEST).json(error)
     }
 

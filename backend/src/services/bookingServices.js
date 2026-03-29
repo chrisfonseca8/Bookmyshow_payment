@@ -6,6 +6,7 @@ const {seatRepo} = require('../repositories');
 const initiateBookingservice =async(hallId,seats)=>{
     try {
         const response = await seatRepo.initiateSeatBooking(hallId,seats);
+        console.log(response)
         return response;
     } catch (error) {
         console.log('some error in initateBooking Service',error)

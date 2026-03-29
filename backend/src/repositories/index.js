@@ -1,3 +1,4 @@
 module.exports = {
-    seatRepo:require('./seats')
+    seatRepo:require('./seats'),
+    detailRepo:require('./details')
 }

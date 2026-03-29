@@ -9,12 +9,12 @@
 const { seats } = require("../models");
 const { Op } = require("sequelize");
 const db = require("../models");
-const { lockrowforUpdate } = require("./queries");
+//const { lockrowforUpdate } = require("./queries");
 
-const { Enums } = require("../utils");
-const { seatNameEnum, statusEnum } = Enums;
+const { seatNameEnum, statusEnum } = require("../utils/common/ENUM");
 const { Classic, Classic_Plus, Recliner, Prime } = seatNameEnum;
 const { Booked, UnBooked, Initiated, Cancelled } = statusEnum;
+
 
 
 async function allSeats() {
@@ -23,7 +23,7 @@ async function allSeats() {
 }
 
 async function initiateSeatBooking(hallId, bookedSeats) {
-  const t = await sequelize.transaction();
+  const t = await db.sequelize.transaction();
   try {
     const checkedSeats = await seats.findAll({
       where: {
@@ -59,7 +59,7 @@ async function initiateSeatBooking(hallId, bookedSeats) {
 }
 
 async function confirmBooking(hallId, bookedSeats) {
-  const t = await sequelize.transaction();
+  const t = await db.sequelize.transaction();
 
     try {
     const intiatedSeats = await seats.findAll({
@@ -96,9 +96,30 @@ async function confirmBooking(hallId, bookedSeats) {
   }
 
 }
+ // const { Op } = require('sequelize');
+
+async function checkingTerminatedSession() {
+
+  const tenMinutesAgo = new Date(Date.now() - 10*  60 * 1000);
+
+  const response = await seats.update(
+    { status: 'UnBooked' },
+    {
+      where: {
+        status: 'Initiated',
+        updatedAt: {
+          [Op.lt]: tenMinutesAgo
+        }
+      }
+    }
+  );
+
+  return response;
+}
 
 module.exports = {
   initiateSeatBooking,
   confirmBooking,
-  allSeats
+  allSeats,
+  checkingTerminatedSession
 };

@@ -4,12 +4,17 @@ import './index.css'
 import App from './App.jsx'
 import {createBrowserRouter,Navigate,RouterProvider} from 'react-router-dom'
 import SeatsPage from './components/SeatsPage.jsx'
+import Payment from './components/Payment.jsx'
 
 
 const router = createBrowserRouter([
   {
     path:'/',
     element:<SeatsPage/>,
+  },
+  {
+    path:'/payment',
+    element:<Payment/>
   }
 ])
 

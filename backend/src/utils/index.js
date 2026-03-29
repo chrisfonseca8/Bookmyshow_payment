@@ -1,3 +1,4 @@
 module.exports = {
-    Enums:require('./common/ENUM')
+    Enums:require('./common/ENUM'),
+    cronJob:require('./common/cron-job')
 }
