@@ -12,7 +12,27 @@ const allSeats = async (req, res) => {
   }
 };
 
+const checkSeatAvailability = async (req, res,next) => {
+    const { hallId, seats } = req.body;
+    try {
+         await seatservice.checkSeatAvailability(hallId, seats);
+
+        return res.status(StatusCodes.OK).json({
+            success: true,
+            data: response
+        });
+        next();
+    } catch (error) {
+        console.error("Seat check failed:", error.message);
+
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            message: error.message || "Seat validation failed"
+        });
+    }
+};
 
 module.exports = {
-    allSeats
+  allSeats,
+  checkSeatAvailability
 }

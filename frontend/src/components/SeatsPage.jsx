@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import {useNavigate} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Outlet } from "react-router-dom";
 
@@ -22,8 +22,9 @@ function SeatsPage() {
   const [numberOfSeats, setNumberOfSeats] = useState(2);
   const [selectedSeats, setSelectedSeats] = useState([]);
 
-  const [movieName,setMovieName] = useState('');
-  const [time,setTime] = useState('');
+  const [movieName, setMovieName] = useState('');
+  const [time, setTime] = useState('');
+  const [bookingError, setBookingError] = useState('');
 
 
 
@@ -48,25 +49,25 @@ function SeatsPage() {
       })
   }, [])
 
-  useEffect(()=>{
-    fetch('http://localhost:3000/api/v1/details/movie/1',{
-      method:'GET',
-      headers:{
-        'Content-Type':'application/json'
+  useEffect(() => {
+    fetch('http://localhost:3000/api/v1/details/movie/1', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
       },
     })
-    .then(res=>
-      res.json()
-    )
-    .then(data=>{
-     // console.log(data.response[0]);
-      const obj = data.response[0];
-      console.log(obj.startTime)
-    setMovieName(obj.MovieDetail.name);
-      setTime(obj.startTime)
-     //console.log(movieName,time)
-    })
-  },[])
+      .then(res =>
+        res.json()
+      )
+      .then(data => {
+        // console.log(data.response[0]);
+        const obj = data.response[0];
+        console.log(obj.startTime)
+        setMovieName(obj.MovieDetail.name);
+        setTime(obj.startTime)
+        //console.log(movieName,time)
+      })
+  }, [])
 
 
 
@@ -129,23 +130,46 @@ function SeatsPage() {
 
   const totalPrice = seats.filter(s => selectedSeats.includes(s.seat_number)).reduce((acc, curr) => acc + (curr.price || 250), 0);
 
-  const handlePay=()=>{
-    fetch(`http://localhost:3000/api/v1/booking/start`,{
-      method:'POST',
-       headers:{
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify({
-        hallId:1,
-        seats:selectedSeats,
-      })
-    })
-    const storageObject = {
-      selectedSeats:selectedSeats,
-      totalPrice:totalPrice
+  const handlePay = async () => {
+    setBookingError('');
+    try {
+      const response = await fetch(`http://localhost:3000/api/v1/booking/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          hallId: 1,
+          seats: selectedSeats,
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Payment initiation failed');
+      }
+
+      const storageObject = {
+        selectedSeats,
+        totalPrice,
+        movieName,
+        time,
+        hallName: 'PVR: Nucleus Mall, Ranchi (AUDI 02)'
+      };
+
+      localStorage.setItem('selectedSeats', JSON.stringify(storageObject));
+      navigate('/payment');
+
+    } catch (err) {
+      console.log("FULL ERROR:", err);
+      setBookingError(err.message);
+      setTimeout(() => {
+        //navigate('/');
+       // console.log('3 sec');
+       window.location.reload();
+      }, 3000);
     }
-    localStorage.setItem('selectedSeats',JSON.stringify(storageObject));
-    navigate('/payment');
   }
 
   return (
@@ -303,43 +327,51 @@ function SeatsPage() {
       </div>
 
       {/* ── Legend Footer / Checkout Box ── */}
-      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 py-3 z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] min-h-[70px] flex items-center justify-center transition-all duration-300">
-         {selectedSeats.length > 0 ? (
-           <div className="flex justify-between items-center w-full max-w-5xl mx-auto px-4 md:px-12">
-             <div className="flex flex-col">
+      <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex flex-col z-30 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] transition-all duration-300">
+        {bookingError && (
+          <div className="bg-[#fce8e6] text-[#d93025] text-[13px] font-medium py-2 px-4 flex items-center justify-center gap-2 border-b border-[#fad2cf]">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            {bookingError}
+          </div>
+        )}
+        <div className="py-3 min-h-[70px] flex items-center justify-center w-full">
+          {selectedSeats.length > 0 ? (
+            <div className="flex justify-between items-center w-full max-w-5xl mx-auto px-4 md:px-12">
+              <div className="flex flex-col">
                 <span className="text-[12px] text-gray-500 font-medium">Selected Seats ({selectedSeats.length})</span>
                 <span className="text-[14px] font-semibold text-[#333] mt-0.5">{selectedSeats.join(', ')}</span>
-             </div>
-             <button
-             onClick={handlePay}
-             className="bg-[#f84464] hover:bg-[#e63c58] text-white px-8 sm:px-16 py-2.5 rounded-[8px] font-semibold text-[14px] shadow-sm transition-colors">
-               Pay ₹{totalPrice}
-             </button>
-           </div>
-         ) : (
-           <div className="flex justify-center items-center gap-4 sm:gap-6 flex-wrap px-2">
+              </div>
+              <button
+                onClick={handlePay}
+                className="bg-[#f84464] hover:bg-[#e63c58] text-white px-8 sm:px-16 py-2.5 rounded-[8px] font-semibold text-[14px] shadow-sm transition-colors">
+                Pay ₹{totalPrice}
+              </button>
+            </div>
+          ) : (
+            <div className="flex justify-center items-center gap-4 sm:gap-6 flex-wrap px-2">
               <div className="flex items-center gap-2">
-                 <div className="w-[18px] h-[18px] rounded-[3px] border-[1.5px] border-[#f5b53f] bg-white"></div>
-                 <span className="text-xs text-gray-600 flex items-center gap-1">Bestseller <span className="text-[10px] bg-gray-100 rounded-full w-3.5 h-3.5 flex items-center justify-center border font-bold">i</span></span>
+                <div className="w-[18px] h-[18px] rounded-[3px] border-[1.5px] border-[#f5b53f] bg-white"></div>
+                <span className="text-xs text-gray-600 flex items-center gap-1">Bestseller <span className="text-[10px] bg-gray-100 rounded-full w-3.5 h-3.5 flex items-center justify-center border font-bold">i</span></span>
               </div>
               <div className="flex items-center gap-2">
-                 <div className="w-[18px] h-[18px] rounded-[3px] border-[1.5px] border-[#1ea83c] bg-white"></div>
-                 <span className="text-xs text-gray-600">Available</span>
+                <div className="w-[18px] h-[18px] rounded-[3px] border-[1.5px] border-[#1ea83c] bg-white"></div>
+                <span className="text-xs text-gray-600">Available</span>
               </div>
               <div className="flex items-center gap-2">
-                 <div className="w-[18px] h-[18px] rounded-[3px] bg-[#1ea83c]"></div>
-                 <span className="text-xs text-gray-600">Selected</span>
+                <div className="w-[18px] h-[18px] rounded-[3px] bg-[#1ea83c]"></div>
+                <span className="text-xs text-gray-600">Selected</span>
               </div>
               <div className="flex items-center gap-2">
-                 <div className="w-[18px] h-[18px] rounded-[3px] bg-[#e5e5e5]"></div>
-                 <span className="text-xs text-gray-600">Sold</span>
+                <div className="w-[18px] h-[18px] rounded-[3px] bg-[#e5e5e5]"></div>
+                <span className="text-xs text-gray-600">Sold</span>
               </div>
-           </div>
-         )}
+            </div>
+          )}
+        </div>
       </div>
-           <Outlet/>
+      <Outlet />
     </div>
-    
+
   )
 }
 export default SeatsPage

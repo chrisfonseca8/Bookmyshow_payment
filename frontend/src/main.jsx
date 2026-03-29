@@ -5,6 +5,7 @@ import App from './App.jsx'
 import {createBrowserRouter,Navigate,RouterProvider} from 'react-router-dom'
 import SeatsPage from './components/SeatsPage.jsx'
 import Payment from './components/Payment.jsx'
+import Confirmation from './components/Confirmation.jsx'
 
 
 const router = createBrowserRouter([
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path:'/payment',
     element:<Payment/>
+  },
+  {
+    path:'/confirmation',
+    element:<Confirmation/>
   }
 ])
 

@@ -37,38 +37,43 @@ async function initiateSeatBooking(hallId, bookedSeats) {
     });
 
     const checkedSeatsId = checkedSeats.map((obj) => obj.id);
-    await seats.update(
+    const [updatedCount] = await seats.update(
       { status: Initiated },
       {
         where: {
           id: {
             [Op.in]: checkedSeatsId,
           },
+          status:UnBooked
         },
         transaction: t,
         lock: t.LOCK.UPDATE,
       },
     );
+    if (updatedCount !== bookedSeats.length) {
+    throw new Error('seat already taken');
+}
 
     await t.commit();
     return checkedSeatsId;
   } catch (error) {
     await t.rollback();
     console.log(error);
+    throw error
   }
 }
 
 async function confirmBooking(hallId, bookedSeats) {
   const t = await db.sequelize.transaction();
 
-    try {
+  try {
     const intiatedSeats = await seats.findAll({
       where: {
         hallId: hallId,
         seat_number: {
           [Op.in]: bookedSeats,
         },
-        status:Initiated
+        status: Initiated
       },
       transaction: t,
       lock: t.LOCK.UPDATE,
@@ -93,14 +98,15 @@ async function confirmBooking(hallId, bookedSeats) {
   } catch (error) {
     await t.rollback();
     console.log(error);
+    throw error;
   }
 
 }
- // const { Op } = require('sequelize');
+// const { Op } = require('sequelize');
 
 async function checkingTerminatedSession() {
 
-  const tenMinutesAgo = new Date(Date.now() - 10*  60 * 1000);
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
   const response = await seats.update(
     { status: 'UnBooked' },
@@ -117,9 +123,24 @@ async function checkingTerminatedSession() {
   return response;
 }
 
+
+async function checkSeatAvailability(hallId, initiatedSeats) {
+  const response = await seats.findAll(
+    {
+      where: {
+        hallId: hallId,
+        seat_number: {
+          [Op.in]: initiatedSeats,
+        }
+      }
+    }
+  )
+  return response
+}
+
 module.exports = {
   initiateSeatBooking,
   confirmBooking,
   allSeats,
-  checkingTerminatedSession
+  checkingTerminatedSession, checkSeatAvailability
 };

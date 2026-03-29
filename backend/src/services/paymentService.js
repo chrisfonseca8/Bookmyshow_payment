@@ -75,6 +75,7 @@ class paymentGateway {
         console.log("payment complete");
         return true;
     }
+
 }
 
 
@@ -119,29 +120,53 @@ class RazorPayPaymentGateway extends paymentGateway {
 
 // making final proxy gateway
 
-class proxyPaymentGateway extends paymentGateway{
+class proxyPaymentGateway extends paymentGateway {
     constructor(retries, gateway) {
-        super(gateway.bankingSystem)
-        this.retries = retries,
-            this.gateway = gateway
+        super(gateway.bankingSystem);
+        this.retries = retries;
+        this.gateway = gateway;
     }
 
-    async paymetProcess() {
-        let result = false;
-        for (let attempt = this.retries; attempt > 0; attempt--) {
-            if (attempt > 0) {
+    async paymetProcess(request) {
+        let lastError = null;
+
+        for (let attempt = 1; attempt <= this.retries; attempt++) {
+            try {
                 console.log(
-                    `[Proxy] Retrying payment (attempt ${this.retries - attempt + 1}) for ${request.sender}`,
+                    `[Proxy] Attempt ${attempt} for ${request.sender}`
                 );
-            }
-            const result = await this.gateway.processPayment(request);
-            if (result) {
-                break;
-            }
-            if (!result) {
+
+                const result = await this.gateway.processPayment(request);
+
+                if (result) {
+                    console.log(`[Proxy] Payment SUCCESS for ${request.sender}`);
+                    return {
+                        success: true,
+                        attempt,
+                        gateway: this.gateway.constructor.name
+                    };
+                }
+
+                // if result false → treat as failure
+                throw new Error("Gateway returned failure");
+
+            } catch (error) {
+                lastError = error;
+
                 console.log(
-                    `[Proxy] Payment failed after ${this.retries - attempt + 1} attempts for ${request.sender}`,
+                    `[Proxy] Attempt ${attempt} failed for ${request.sender}: ${error.message}`
                 );
+
+                // if last attempt → throw
+                if (attempt === this.retries) {
+                    console.log(
+                        `[Proxy] All retries FAILED for ${request.sender}`
+                    );
+
+                    throw new Error(
+                        `Payment failed after ${this.retries} attempts`
+                    );
+                }
             }
         }
     }
@@ -157,17 +182,23 @@ class paymentRequest {
 }
 
 
-  const request =  new paymentRequest('chris','fonseca','INR',1000);
+const paymentObject ={
+    paytm:[new paymentGateway(),3],
+    razorPay:[new RazorPayPaymentGateway(),5]
+}
 
-  const gateway = new paytmPaymentGateway();
-  const proxy = new proxyPaymentGateway(3,gateway)
+//   const request =  new paymentRequest('chris','fonseca','INR',1000);
 
-  const result = proxy.paymetProcess(request);
-  console.log(result)
+//   const gateway = new paytmPaymentGateway();
+//   const proxy = new proxyPaymentGateway(3,gateway)
+
+//   const result = proxy.paymetProcess(request);
+//   console.log(result)
 
   module.exports ={
     paymentRequest,
     paytmPaymentGateway,
     RazorPayPaymentGateway,
-    proxyPaymentGateway
+    proxyPaymentGateway,
+    paymentObject
   }
